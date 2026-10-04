@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>RSVP Raphaëlle</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,system-ui,sans-serif;margin:0;padding:20px;max-width:480px;margin:0 auto;color:#222;background:#fafaf8}
+h1{font-size:20px;font-weight:500;margin:0 0 4px}
+.sub{font-size:14px;color:#666;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.m{background:#efede6;border-radius:8px;padding:12px}
+.m span{font-size:13px;color:#666;display:block}
+.m b{font-size:24px;font-weight:500}
+.card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px;margin-bottom:16px}
+input,select,button{width:100%;font-size:16px;padding:10px;border:1px solid #ccc;border-radius:8px;margin-bottom:8px;background:#fff}
+button{background:#222;color:#fff;border:0;cursor:pointer}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label{font-size:13px;color:#666}
+.err{color:#b00020;font-size:13px;margin:0 0 8px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #e5e5e5}
+.row .i{flex:1}
+.row .n{font-weight:500}
+.row .d{font-size:13px;color:#666}
+.row button{width:auto;background:#eee;color:#222;margin:0;padding:6px 10px;font-size:14px}
+</style>
+</head>
+<body>
+<h1>RSVP verjaardag Raphaëlle</h1>
+<p class="sub">Zaterdag 28 november, De Melkerij Brasschaat</p>
+<div class="grid">
+<div class="m"><span>Komen (personen)</span><b id="tAll">0</b></div>
+<div class="m"><span>Misschien (personen)</span><b id="tMaybe">0</b></div>
+<div class="m"><span>Volwassenen</span><b id="tA">0</b></div>
+<div class="m"><span>Kinderen</span><b id="tK">0</b></div>
+</div>
+<div class="card">
+<input id="name" placeholder="Naam of gezin">
+<select id="status"><option value="ja">Komt</option><option value="misschien">Misschien</option><option value="nee">Kan niet</option></select>
+<div class="two">
+<div><label>Volwassenen</label><input id="ad" type="number" min="0" value="2"></div>
+<div><label>Kinderen</label><input id="kd" type="number" min="0" value="1"></div>
+</div>
+<p class="err" id="err"></p>
+<button id="add">Toevoegen</button>
+</div>
+<div id="list"></div>
+<script>
+var KEY='rsvp_raphaelle_2026',data=[];
+try{data=JSON.parse(localStorage.getItem(KEY))||[]}catch(e){}
+var L={ja:'Komt',misschien:'Misschien',nee:'Kan niet'};
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function render(){
+var a=0,k=0,m=0;
+data.forEach(function(d){if(d.status=='ja'){a+=d.adults;k+=d.kids}if(d.status=='misschien'){m+=d.adults+d.kids}});
+tAll.textContent=a+k;tA.textContent=a;tK.textContent=k;tMaybe.textContent=m;
+list.textContent='';
+data.forEach(function(d,i){
+var r=document.createElement('div');r.className='row';
+var x=document.createElement('div');x.className='i';
+var n=document.createElement('div');n.className='n';n.textContent=d.name;
+var s=document.createElement('div');s.className='d';
+s.textContent=L[d.status]+(d.status=='nee'?'':' · '+d.adults+' volw., '+d.kids+' kind.');
+x.appendChild(n);x.appendChild(s);
+var b=document.createElement('button');b.textContent='Verwijder';
+b.onclick=function(){data.splice(i,1);save();render()};
+r.appendChild(x);r.appendChild(b);list.appendChild(r);
+});
+}
+add.onclick=function(){
+var nm=name.value.trim(),st=status.value;
+var a=Math.max(0,Math.round(+ad.value||0)),k=Math.max(0,Math.round(+kd.value||0));
+if(!nm){err.textContent='Vul een naam in';return}
+if(st!='nee'&&a+k==0){err.textContent='Vul minstens één persoon in';return}
+if(st=='nee'){a=0;k=0}
+data.push({name:nm,status:st,adults:a,kids:k});
+save();name.value='';ad.value=2;kd.value=1;status.value='ja';err.textContent='';render();
+};
+name.oninput=function(){err.textContent=''};
+render();
+</script>
+</body>
+</html>
